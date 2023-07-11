@@ -1,6 +1,10 @@
-name: Commitlint
+name: PR Commitlint Checks
 
-on: [ push ]
+on:
+  pull_request:
+    types:
+      - opened
+      - synchronize
 
 jobs:
   commitlint:
@@ -20,6 +24,9 @@ jobs:
 
       - name: Install dev dependencies
         run: npm install --only=dev
+
+      - name: Fetch PR branch
+        run: git fetch origin ${{ github.event.pull_request.head.ref }}:${{ github.event.pull_request.head.ref }}
 
       - name: Run commitlint
         run: npx commitlint --from=$GITHUB_BASE_REF --to=$GITHUB_HEAD_REF --verbose
