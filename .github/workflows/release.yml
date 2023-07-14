@@ -102,6 +102,8 @@ jobs:
             --body "${body}"
           fi         
 
+
+  # Adds a link of current run to the issue comment.
   checks_result:
     needs: [ issue ]
     if: needs.issue.result == 'success'
@@ -128,6 +130,8 @@ jobs:
           gh issue comment $issue_number \
           --body "Workflow results: $url"
 
+
+  # Runs ESLint and Tests
   eslint:
     needs: [ issue ]
     uses: ./.github/workflows/eslint.yml
@@ -136,6 +140,8 @@ jobs:
     needs: [ issue ]
     uses: ./.github/workflows/test.yml
 
+
+  # Deploys new version if everything is successful
   deploy:
     needs: [ issue, checks_result, eslint, test ]
     if: success()
@@ -202,6 +208,8 @@ jobs:
           -c "Deployed successfully at: $deployment_url Commit: $commit_url" \
           -r "completed"
 
+
+  # Creates new release if deployment is successful
   release:
     needs: [ deploy ]
     runs-on: ubuntu-latest
