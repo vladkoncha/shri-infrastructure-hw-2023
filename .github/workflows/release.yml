@@ -37,7 +37,7 @@ jobs:
           
           if [[ "$latest_version" == "null" ]]; then
             echo "First version. No previous releases. Tag is valid."
-          elif [[ "$new_version" -lt "$latest_version" ]]; then
+          elif [[ "$new_version" -le "$latest_version" ]]; then
             echo "Error: New tag version is not greater than the latest release version."
             exit 1
           fi
@@ -49,11 +49,12 @@ jobs:
           echo "author=${{ github.actor }}" >> $GITHUB_OUTPUT
           echo "date=$(date +'%Y-%m-%d')" >> $GITHUB_OUTPUT
 
-      - name: Install dev dependencies
-        run: npm install --only=dev
-
-      - name: Generate Changelog
-        run: npx conventional-changelog -p angular -i CHANGELOG.md -s
+      - name: Generate changelog
+        if: ${{ steps.get_latest_release_version.outputs.latest_version != 'null' }}
+        id: changelog
+        uses: metcalfc/changelog-generator@v4.1.0
+        with:
+          myToken: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Get Issue
         env:
@@ -68,13 +69,20 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.RELEASE_TOKEN }}
         run: |
+          latest_version="${{ steps.get_latest_release_version.outputs.latest_version }}"
+          if [[ "$latest_version" == "null" ]]; then
+            changelog="First release"
+          else
+            changelog="${{ steps.changelog.outputs.changelog }}"
+          fi
+          
           body=$(cat <<-EOM
           Author: ${{ steps.tag.outputs.author }}
           Date: ${{ steps.tag.outputs.date }}
           Version: ${{ steps.tag.outputs.version }}
 
           Changelog:
-          $(cat CHANGELOG.md)
+          $changelog
           EOM
           )
 
@@ -121,9 +129,11 @@ jobs:
           --body "Workflow results: $url"
 
   eslint:
+    needs: [ issue ]
     uses: ./.github/workflows/eslint.yml
 
   test:
+    needs: [ issue ]
     uses: ./.github/workflows/test.yml
 
   deploy:
