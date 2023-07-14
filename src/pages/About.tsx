@@ -5,9 +5,9 @@ export const About: FC = () => {
   return (
     <>
       <Helmet>
-        <title>New About page</title>
+        <title>Awesome About page</title>
       </Helmet>
-      <h1 data-testid="page-title">About</h1>
+      <h1 data-testid="page-title">New About</h1>
       <p>This is an example application.</p>
     </>
   );
