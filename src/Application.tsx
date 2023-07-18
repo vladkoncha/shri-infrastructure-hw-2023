@@ -6,7 +6,7 @@ import { Home } from "./pages/Home";
 
 export const Application: FC = () => {
   const home = <Home />;
-  const about = <About />;
+  const about = <About />; 
 
   return (
     <div>
